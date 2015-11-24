@@ -21,7 +21,10 @@ def launch_memory_usage_server(port=8080):
     cherrypy.tree.mount(Root())
     cherrypy.config.update({
         'environment': 'embedded',
-        'server.socket_port': port
+        'server.socket_port': port,
+        'global': {
+            'request.show_tracebacks': True
+        },
     })
 
     cherrypy.engine.start()

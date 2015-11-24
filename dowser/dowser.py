@@ -16,7 +16,7 @@ import cgi
 import gc
 import os
 import pkg_resources
-from io import StringIO
+from io import BytesIO
 import sys
 import threading
 import time
@@ -150,7 +150,7 @@ class Root:
                   fill="#009900")
         del draw
 
-        f = StringIO()
+        f = BytesIO()
         im.save(f, "PNG")
         result = f.getvalue()
 
