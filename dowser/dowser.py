@@ -1,11 +1,22 @@
-__import__("pkg_resources").declare_namespace(__name__)
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# vim: fenc=utf-8
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
+#
+#
 
+"""
+File name: dowser.py
+Version: 0.1
+Author: dhilipsiva <dhilipsiva@gmail.com>
+Date created: 2015-11-24
+"""
 import cgi
 import gc
 import os
 import pkg_resources
-localDir = os.path.dirname(pkg_resources.resource_filename(__name__, "main.css"))
-from StringIO import StringIO
+from io import StringIO
 import sys
 import threading
 import time
@@ -16,20 +27,29 @@ from PIL import ImageDraw
 
 import cherrypy
 
-import reftree
+from dowser import reftree
+from cherrypy import tools
+
+localDir = os.path.dirname(
+    pkg_resources.resource_filename(__name__, "main.css"))
 
 
 def get_repr(obj, limit=250):
     return cgi.escape(reftree.get_repr(obj, limit))
 
-class _(object): pass
+
+class _(object):
+    pass
+
 dictproxy = type(_.__dict__)
 
-method_types = [type(tuple.__le__),                 # 'wrapper_descriptor'
-                type([1].__le__),                   # 'method-wrapper'
-                type(sys.getcheckinterval),         # 'builtin_function_or_method'
-                type(cgi.FieldStorage.getfirst),    # 'instancemethod'
-                ]
+method_types = [
+    type(tuple.__le__),  # 'wrapper_descriptor'
+    type([1].__le__),  # 'method-wrapper'
+    type(sys.getcheckinterval),  # 'builtin_function_or_method'
+    type(cgi.FieldStorage.getfirst),  # 'instancemethod'
+]
+
 
 def url(path):
     try:
@@ -54,8 +74,7 @@ class Root:
     def __init__(self):
         self.history = {}
         self.samples = 0
-        if cherrypy.__version__ >= '3.1':
-            cherrypy.engine.subscribe('exit', self.stop)
+        cherrypy.engine.subscribe('exit', self.stop)
         self.runthread = threading.Thread(target=self.start)
         self.runthread.start()
 
@@ -76,7 +95,7 @@ class Root:
             else:
                 typecounts[objtype] = 1
 
-        for objtype, count in typecounts.iteritems():
+        for objtype, count in typecounts.items():
             typename = objtype.__module__ + "." + objtype.__name__
             if typename not in self.history:
                 self.history[typename] = [0] * self.samples
@@ -85,14 +104,14 @@ class Root:
         samples = self.samples + 1
 
         # Add dummy entries for any types which no longer exist
-        for typename, hist in self.history.iteritems():
+        for typename, hist in self.history.items():
             diff = samples - len(hist)
             if diff > 0:
                 hist.extend([0] * diff)
 
         # Truncate history to self.maxhistory
         if samples > self.maxhistory:
-            for typename, hist in self.history.iteritems():
+            for typename, hist in self.history.items():
                 hist.pop(0)
         else:
             self.samples = samples
@@ -102,8 +121,7 @@ class Root:
 
     def index(self, floor=0):
         rows = []
-        typenames = self.history.keys()
-        typenames.sort()
+        typenames = sorted(list(self.history.keys()))
         for typename in typenames:
             hist = self.history[typename]
             maxhist = max(hist)
@@ -186,7 +204,8 @@ class Root:
                     rows.append('</div>')
 
                     # Referrers
-                    rows.append('<div class="refs"><h3>Referrers (Parents)</h3>')
+                    rows.append(
+                        '<div class="refs"><h3>Referrers (Parents)</h3>')
                     rows.append('<p class="desc"><a href="%s">Show the '
                                 'entire tree</a> of reachable objects</p>'
                                 % url("/tree/%s/%s" % (typename, objid)))
@@ -198,9 +217,11 @@ class Root:
                     rows.append('</div>')
 
                     # Referents
-                    rows.append('<div class="refs"><h3>Referents (Children)</h3>')
+                    rows.append(
+                        '<div class="refs"><h3>Referents (Children)</h3>')
                     for child in gc.get_referents(obj):
-                        rows.append("<p class='obj'>%s</p>" % tree.get_repr(child))
+                        rows.append(
+                            "<p class='obj'>%s</p>" % tree.get_repr(child))
                     rows.append('</div>')
                 break
         if not rows:
@@ -224,7 +245,8 @@ class Root:
 
                     tree = ReferrerTree(obj)
                     tree.ignore(all_objs)
-                    for depth, parentid, parentrepr in tree.walk(maxresults=1000):
+                    for depth, parentid, parentrepr in tree.walk(
+                            maxresults=1000):
                         rows.append(parentrepr)
 
                     rows.append('</div>')
@@ -239,21 +261,7 @@ class Root:
         return template("tree.html", **params)
     tree.exposed = True
 
-
-try:
-    # CherryPy 3
-    from cherrypy import tools
-    Root.main_css = tools.staticfile.handler(root=localDir, filename="main.css")
-except ImportError:
-    # CherryPy 2
-    cherrypy.config.update({
-        '/': {'log_debug_info_filter.on': False},
-        '/main.css': {
-            'static_filter.on': True,
-            'static_filter.file': 'main.css',
-            'static_filter.root': localDir,
-            },
-        })
+Root.main_css = tools.staticfile.handler(root=localDir, filename="main.css")
 
 
 class ReferrerTree(reftree.Tree):
@@ -274,8 +282,8 @@ class ReferrerTree(reftree.Tree):
         thisfile = sys._getframe().f_code.co_filename
         for ref in refiter:
             # Exclude all frames that are from this module or reftree.
-            if (isinstance(ref, FrameType)
-                and ref.f_code.co_filename in (thisfile, self.filename)):
+            if (isinstance(ref, FrameType) and
+                    ref.f_code.co_filename in (thisfile, self.filename)):
                 continue
 
             # Exclude all functions and classes from this module or reftree.
@@ -320,9 +328,11 @@ class ReferrerTree(reftree.Tree):
                 )
 
     def get_refkey(self, obj, referent):
-        """Return the dict key or attribute name of obj which refers to referent."""
+        """
+        Return the dict key or attribute name of obj which refers to referent.
+        """
         if isinstance(obj, dict):
-            for k, v in obj.iteritems():
+            for k, v in obj.items():
                 if v is referent:
                     return " (via its %r key)" % k
 
@@ -330,24 +340,3 @@ class ReferrerTree(reftree.Tree):
             if getattr(obj, k, None) is referent:
                 return " (via its %r attribute)" % k
         return ""
-
-
-def launch_memory_usage_server(port = 8080):
-    import cherrypy
-    import dowser
-
-    cherrypy.tree.mount(dowser.Root())
-    cherrypy.config.update({
-        'environment': 'embedded',
-        'server.socket_port': port
-    })
-
-    cherrypy.engine.start()
-
-
-def main():
-    try:
-        cherrypy.quickstart(Root())
-    except AttributeError:
-        cherrypy.root = Root()
-        cherrypy.server.start()
