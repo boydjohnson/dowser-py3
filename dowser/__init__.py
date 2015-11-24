@@ -1,1 +1,1 @@
-from dowser import Root, ReferrerTree  # NOQA
+from dowser.dowser import Root, ReferrerTree  # NOQA
