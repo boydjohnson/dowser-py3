@@ -17,14 +17,17 @@ import cherrypy
 from dowser import Root
 
 
-def launch_memory_usage_server(port=8080):
-    cherrypy.tree.mount(Root())
-    cherrypy.config.update({
+def launch_memory_usage_server(port=8080, show_trace=False):
+    config = {
         'environment': 'embedded',
         'server.socket_port': port,
-        'global': {
-            'request.show_tracebacks': True
-        },
-    })
-
+    }
+    if show_trace:
+        config.update({
+            'global': {
+                'request.show_tracebacks': True
+            }}
+        )
+    cherrypy.tree.mount(Root())
+    cherrypy.config.update(config)
     cherrypy.engine.start()
