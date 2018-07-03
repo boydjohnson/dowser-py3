@@ -48,21 +48,15 @@ setup(
 
     keywords='dowser memory leak',
     packages=find_packages(),
+    package_data={"dowser": ["*.html", "*.css"]},
+    include_package_data=True,
     py_modules=['dowser'],
     entry_points='''
     ''',
     install_requires=[
         'CherryPy',
-        'emport',
-        'infi.pyutils',
-        'infi.recipe.console-scripts',
-        'Logbook',
-        'packaging',
         'pbr',
         'Pillow',
-        'z3c.recipe.scripts',
-        'zc.buildout',
-        'zc.recipe.egg',
     ],
     extras_require={
         'dev': [''],

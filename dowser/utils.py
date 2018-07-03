@@ -1,24 +1,10 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-# vim: fenc=utf-8
-# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-#
-#
-
-"""
-File name: utils.py
-Version: 0.1
-Author: dhilipsiva <dhilipsiva@gmail.com>
-Date created: 2015-11-24
-"""
-
 import cherrypy
 from dowser import Root
 
 
 def launch_memory_usage_server(port=8080, show_trace=False):
     config = {
+        'server.socket_host': '0.0.0.0',
         'environment': 'embedded',
         'server.socket_port': port,
     }
